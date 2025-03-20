@@ -1,103 +1,114 @@
-import Image from "next/image";
+"use client";
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Header from '@/components/Header';
+import ActivityCard from '@/components/ActivityCard';
+import AddActivityModal from '@/components/AddActivityModal';
+import { formatDistanceToNow } from 'date-fns';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [activities, setActivities] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('all');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  useEffect(() => {
+    fetchActivities();
+  }, []);
+
+  const fetchActivities = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/activities');
+      if (!response.ok) throw new Error('Failed to fetch activities');
+      const data = await response.json();
+      setActivities(data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)));
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const filteredActivities = activeFilter === 'all' 
+    ? activities 
+    : activities.filter(activity => activity.type === activeFilter);
+
+  const handleFilterChange = (filter) => {
+    setActiveFilter(filter);
+  };
+
+  return (
+    <main className="min-h-screen bg-gray-50">
+      <Header />
+      
+      <div className="max-w-xl mx-auto p-4">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-indigo-700">Activity Log</h1>
+          <button 
+            onClick={() => setShowModal(true)}
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            Add Activity
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        <div className="mb-6 flex flex-wrap gap-2">
+          <button 
+            onClick={() => handleFilterChange('all')} 
+            className={`px-3 py-1 rounded-full text-sm font-medium ${activeFilter === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+          >
+            All
+          </button>
+          <button 
+            onClick={() => handleFilterChange('diaper')} 
+            className={`px-3 py-1 rounded-full text-sm font-medium ${activeFilter === 'diaper' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+          >
+            Diaper
+          </button>
+          <button 
+            onClick={() => handleFilterChange('feeding')} 
+            className={`px-3 py-1 rounded-full text-sm font-medium ${activeFilter === 'feeding' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+          >
+            Feeding
+          </button>
+          <button 
+            onClick={() => handleFilterChange('sleep')} 
+            className={`px-3 py-1 rounded-full text-sm font-medium ${activeFilter === 'sleep' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+          >
+            Sleep
+          </button>
+        </div>
+
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredActivities.length > 0 ? (
+              filteredActivities.map((activity) => (
+                <ActivityCard 
+                  key={activity.id} 
+                  activity={activity} 
+                  onActivityUpdated={fetchActivities} 
+                />
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                No activities recorded yet.
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {showModal && (
+        <AddActivityModal 
+          onClose={() => setShowModal(false)} 
+          onActivityAdded={fetchActivities}
+        />
+      )}
+    </main>
   );
 }
