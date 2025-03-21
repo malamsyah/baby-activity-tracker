@@ -10,6 +10,7 @@
     "migrate": "node migrations/migrate.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
     "@vercel/postgres": "^0.7.2",
     "date-fns": "^3.3.1",
     "dotenv": "^16.4.5",

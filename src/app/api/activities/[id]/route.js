@@ -1,23 +1,12 @@
 import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
-
-// Create a connection pool that can be reused
-const pool = new Pool({
-  user: process.env.POSTGRES_USER,
-  host: process.env.POSTGRES_HOST,
-  database: process.env.POSTGRES_DATABASE,
-  password: process.env.POSTGRES_PASSWORD,
-  port: 5432,
-});
+import { activities } from '@/lib/db';
 
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
     
-    await pool.query(
-      `DELETE FROM baby_activities WHERE id = $1`,
-      [id]
-    );
+    await activities.deleteActivity(id);
     
     return NextResponse.json({ success: true });
   } catch (error) {
