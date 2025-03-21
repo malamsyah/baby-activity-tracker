@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import moment from 'moment';
 
 export default function AddActivityModal({ onClose, onActivityAdded }) {
   const [activityType, setActivityType] = useState('diaper');
@@ -11,18 +12,12 @@ export default function AddActivityModal({ onClose, onActivityAdded }) {
     feedingType: 'breast',
     feedingSide: 'left',
     feedingStartTime: (() => {
-      // Create date object for current time using browser's timezone
-      const now = new Date();
-      // Format for datetime-local input
-      return now.toISOString().slice(0, 16);
+      // Use moment.js to get current time in local timezone
+      return moment().format('YYYY-MM-DDTHH:mm');
     })(),
     feedingEndTime: (() => {
-      // Create date object for current time
-      const now = new Date();
-      // Add 10 minutes
-      const timePlus10Min = new Date(now.getTime() + 10 * 60 * 1000);
-      // Format for datetime-local input
-      return timePlus10Min.toISOString().slice(0, 16);
+      // Use moment.js to add 10 minutes to current time in local timezone
+      return moment().add(10, 'minutes').format('YYYY-MM-DDTHH:mm');
     })(),
     
     // Common fields
@@ -58,7 +53,7 @@ export default function AddActivityModal({ onClose, onActivityAdded }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: activityType,
-          timestamp: new Date().toISOString(),
+          timestamp: moment().toISOString(),
           details,
           notes: formData.notes,
         }),
