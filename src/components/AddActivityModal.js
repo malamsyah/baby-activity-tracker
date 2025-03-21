@@ -10,8 +10,20 @@ export default function AddActivityModal({ onClose, onActivityAdded }) {
     // Feeding fields
     feedingType: 'breast',
     feedingSide: 'left',
-    feedingStartTime: new Date().toISOString().slice(0, 16),
-    feedingEndTime: '',
+    feedingStartTime: (() => {
+      // Create date object for current time using browser's timezone
+      const now = new Date();
+      // Format for datetime-local input
+      return now.toISOString().slice(0, 16);
+    })(),
+    feedingEndTime: (() => {
+      // Create date object for current time
+      const now = new Date();
+      // Add 10 minutes
+      const timePlus10Min = new Date(now.getTime() + 10 * 60 * 1000);
+      // Format for datetime-local input
+      return timePlus10Min.toISOString().slice(0, 16);
+    })(),
     
     // Common fields
     notes: '',
