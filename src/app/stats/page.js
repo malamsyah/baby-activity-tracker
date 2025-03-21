@@ -1,17 +1,26 @@
 "use client";
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import StatsCard from '@/components/StatsCard';
 import { format, startOfDay, endOfDay, differenceInDays } from 'date-fns';
+import { isAuthenticated } from '@/lib/auth';
 
 export default function StatsPage() {
   const [activities, setActivities] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dateRange, setDateRange] = useState('last7days');
+  const router = useRouter();
 
   useEffect(() => {
+    // Check if user is authenticated
+    if (!isAuthenticated()) {
+      router.push('/login');
+      return;
+    }
+    
     fetchActivities();
-  }, []);
+  }, [router]);
 
   const fetchActivities = async () => {
     setIsLoading(true);

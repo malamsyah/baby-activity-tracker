@@ -1,20 +1,29 @@
 "use client";
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import ActivityCard from '@/components/ActivityCard';
 import AddActivityModal from '@/components/AddActivityModal';
 import { formatDistanceToNow } from 'date-fns';
+import { isAuthenticated } from '@/lib/auth';
 
 export default function Home() {
   const [activities, setActivities] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
+  const router = useRouter();
 
   useEffect(() => {
+    // Check if user is authenticated
+    if (!isAuthenticated()) {
+      router.push('/login');
+      return;
+    }
+    
     fetchActivities();
-  }, []);
+  }, [router]);
 
   const fetchActivities = async () => {
     setIsLoading(true);
